@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
     <!-- favicon -->
@@ -23,24 +24,54 @@
         }
     </style>
 </head>
+
 <body>
     <script src="https://pixijs.download/release/pixi.js"></script>
     <script type="module">
         import Player from "./cdn/class/Player.js";
+        import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
         // max width and height of the canvas
         const MAX_WIDTH = window.innerWidth;
         const MAX_HEIGHT = window.innerHeight;
-        const APP = new PIXI.Application({ width: MAX_WIDTH, height: MAX_HEIGHT });
+        const APP = new PIXI.Application({ resizeTo: window });
         document.body.appendChild(APP.view);
 
-        const mainPlayer = new Player("Test", 0, 0, 0, PIXI, APP);
+        let mainPlayer;
+        const playerMap = {};
 
         // on mouse move
         document.addEventListener("mousemove", (e) => {
+            if (!mainPlayer) return;
             mainPlayer.move(e.clientX, e.clientY);
+            socket.emit("update", { x: mainPlayer.x, y: mainPlayer.y });
+        });
+
+        const socket = io("https://test2.godmode.social");
+
+        socket.on("players", (players) => {
+            for (const player of players) {
+                if (!playerMap[player.id]) {
+                    const newPlayer = new Player(player.name, player.id, player.x, player.y, player.color, PIXI, APP);
+                    playerMap[player.id] = newPlayer;
+                    // if the player is the main player
+                    if (player.id === socket.id) {
+                        mainPlayer = newPlayer;
+                    }
+                }
+                const playerObj = playerMap[player.id];
+                if (playerObj.id !== socket.id) {
+                    playerObj.move(player.x, player.y);
+                }
+            }
+        })
+
+        socket.on("playerDisconnected", (playerId) => {
+            playerMap[playerId].destroy();
+            delete playerMap[playerId];
         });
 
     </script>
 </body>
+
 </html>

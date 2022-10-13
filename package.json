@@ -20,6 +20,7 @@
   "dependencies": {
     "ejs": "^3.1.8",
     "express": "^4.18.2",
+    "sillyname": "^0.1.0",
     "socket.io": "^4.5.2"
   }
 }
