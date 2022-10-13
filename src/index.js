@@ -40,6 +40,10 @@ io.on("connection", (socket) => {
         io.emit("playerDisconnected", socket.id);
     });
 
+    socket.on("draw", (data) => {
+        io.emit("draw", data);
+    })
+
 })
 
 setInterval(() => {

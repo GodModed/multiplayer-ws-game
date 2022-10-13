@@ -4,6 +4,7 @@ class Player {
         this.id = id;
         this.x = x;
         this.y = y;
+        this.color = color;
         this.PIXI = PIXI;
         this.APP = APP;
         this.container = new PIXI.Container();
