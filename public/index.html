@@ -125,6 +125,7 @@
         })
 
         socket.on("circles", (data) => {
+
             for (const circle of circles) {
                 circle.destroy();
             }
@@ -132,6 +133,9 @@
             circles = [];
 
             for (const circle of data) {
+
+                if (!playerMap[circle.id]) continue;
+
                 const circleObj = new Circle(circle.x, circle.y, 5, playerMap[circle.id].color, circle.id, PIXI, APP);
                 circles.push(circleObj);
             }

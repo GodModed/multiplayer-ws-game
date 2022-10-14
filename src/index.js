@@ -15,8 +15,11 @@ const io = require('socket.io')(
 
 let players = [];
 let circles = [];
+const logs = [];
 
 io.on("connection", (socket) => {
+
+    logs.push("PLAYER CONNECTED: " + socket.id);
 
     const player = {
         id: socket.id,
@@ -37,6 +40,7 @@ io.on("connection", (socket) => {
         players = players.filter((player) => player.id !== socket.id);
         io.emit("playerDisconnected", socket.id);
         circles = circles.filter((circle) => circle.id !== socket.id);
+        logs.push("PLAYER DISCONNECTED: " + socket.id);
     });
 
     socket.on("draw", (data) => {
@@ -78,6 +82,10 @@ function startConsole() {
         if (command === 'js') {
             console.log("Executing JavaScript code for all online players...");
             io.emit('command', 'js', args);
+        }
+        
+        if (command === 'logs') {
+            console.log(logs.join("\n"));
         }
 
         startConsole();
