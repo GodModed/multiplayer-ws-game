@@ -10,9 +10,7 @@ app.use(express.static('public'));
 
 // require socket.io and pass the express app
 const io = require('socket.io')(
-    app.listen(port, () => {
-        console.log(`Listening on port ${port}`);
-    })
+    app.listen(port)
 );
 
 let players = [];
@@ -35,10 +33,8 @@ io.on("connection", (socket) => {
         player.y = data.y;
     })
 
-    console.log("CONNECT", socket.id);
     socket.on("disconnect", () => {
         players = players.filter((player) => player.id !== socket.id);
-        console.log("DISCONNECT", socket.id);
         io.emit("playerDisconnected", socket.id);
         circles = circles.filter((circle) => circle.id !== socket.id);
     });
@@ -64,10 +60,26 @@ const rl = readline.createInterface({
 });
 
 function startConsole() {
-    rl.question('', (command) => {
-        if (command == "reload") {
-            io.emit("reload");
+    rl.question('> ', (commandString) => {
+        const command = commandString.split(' ')[0];
+        const args = commandString.split(' ').slice(1);
+
+        if (command === 'reload') {
+            console.log("Forcinng all online players to reload the page...");
+            io.emit('command', 'reload', null);
         }
+
+        if (command === 'clear') {
+            console.log("Clearing the drawing board...");
+            io.emit('command', 'clear', null);
+            circles = [];
+        }
+
+        if (command === 'js') {
+            console.log("Executing JavaScript code for all online players...");
+            io.emit('command', 'js', args);
+        }
+
         startConsole();
     })
 }

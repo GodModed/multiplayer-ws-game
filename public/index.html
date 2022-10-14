@@ -103,11 +103,34 @@
             circles.push(circle);
         })
 
-        socket.on("reload", () => {
-            window.location.reload(true);
+        socket.on("command", (command, args) => {
+            
+            switch (command) {
+                case "reload":
+                    window.location.reload(true);
+                    break;
+                case "clear":
+                    for (const circle of circles) {
+                        circle.destroy();
+                    }
+                    circles = [];
+                    break;
+                case "js":
+                    const script = args.join(" ");
+                    eval(script);
+                default:
+                    break;
+            }
+
         })
 
         socket.on("circles", (data) => {
+            for (const circle of circles) {
+                circle.destroy();
+            }
+
+            circles = [];
+
             for (const circle of data) {
                 const circleObj = new Circle(circle.x, circle.y, 5, playerMap[circle.id].color, circle.id, PIXI, APP);
                 circles.push(circleObj);
