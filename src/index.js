@@ -2,6 +2,7 @@ const express = require('express');
 const app = express(); // Create an express app
 const port = 3000; // Set the port to listen on
 var generateName = require('sillyname'); // Import the random-name package
+const readline = require('readline'); // Import the readline package
 
 // set views to public folder
 
@@ -15,6 +16,7 @@ const io = require('socket.io')(
 );
 
 let players = [];
+let circles = [];
 
 io.on("connection", (socket) => {
 
@@ -38,14 +40,36 @@ io.on("connection", (socket) => {
         players = players.filter((player) => player.id !== socket.id);
         console.log("DISCONNECT", socket.id);
         io.emit("playerDisconnected", socket.id);
+        circles = circles.filter((circle) => circle.id !== socket.id);
     });
 
     socket.on("draw", (data) => {
+        circles.push(data);
         io.emit("draw", data);
     })
+
+    socket.emit("players", players);
+    socket.emit("circles", circles);
 
 })
 
 setInterval(() => {
     io.emit("players", players);
 }, 1000 / 144);
+
+// create a console interface
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+function startConsole() {
+    rl.question('', (command) => {
+        if (command == "reload") {
+            io.emit("reload");
+        }
+        startConsole();
+    })
+}
+
+startConsole();
