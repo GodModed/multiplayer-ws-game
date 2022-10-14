@@ -32,7 +32,7 @@
         import Circle from "./cdn/class/Circle.js";
         import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
-        const socket = io("https://test2.godmode.social");
+        const socket = io("https://test.godmode.social");
 
         // max width and height of the canvas
         const MAX_WIDTH = window.innerWidth;
@@ -42,7 +42,9 @@
 
         let mainPlayer;
         const playerMap = {};
+        let circles = [];
         let canDraw = false;
+        window.socket = socket;
 
         // on mouse move
         document.addEventListener("pointermove", (e) => {
@@ -50,7 +52,8 @@
             mainPlayer.move(e.clientX, e.clientY);
             socket.emit("update", { x: mainPlayer.x, y: mainPlayer.y });
             if (canDraw) {
-                const circle = new Circle(e.clientX, e.clientY, 5, mainPlayer.color, PIXI, APP);
+                const circle = new Circle(e.clientX, e.clientY, 5, mainPlayer.color, mainPlayer.id, PIXI, APP);
+                circles.push(circle);
                 socket.emit("draw", { x: circle.x, y: circle.y, id: mainPlayer.id });
             }
         });
@@ -73,6 +76,7 @@
                     // if the player is the main player
                     if (player.id === socket.id) {
                         mainPlayer = newPlayer;
+                        window.mainPlayer = mainPlayer;
                     }
                 }
                 const playerObj = playerMap[player.id];
@@ -85,11 +89,18 @@
         socket.on("playerDisconnected", (playerId) => {
             playerMap[playerId].destroy();
             delete playerMap[playerId];
+
+            // get the cirlces that the player drew
+            const playerCircles = circles.filter(circle => circle.id === playerId);
+            for (const circle of playerCircles) {
+                circle.destroy();
+            }
         });
 
         socket.on("draw", (data) => {
             if (data.id === socket.id) return;
-            new Circle(data.x, data.y, 5, playerMap[data.id].color, PIXI, APP);
+            const circle = new Circle(data.x, data.y, 5, playerMap[data.id].color, data.id, PIXI, APP);
+            circles.push(circle);
         })
 
     </script>
