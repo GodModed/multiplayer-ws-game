@@ -32,7 +32,7 @@
         import Circle from "./cdn/class/Circle.js";
         import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
-        const socket = io("https://test.godmode.social");
+        const socket = io("https://cursor.godmode.social");
 
         // max width and height of the canvas
         const MAX_WIDTH = window.innerWidth;
@@ -67,6 +67,12 @@
             if (!mainPlayer) return;
             canDraw = false;
         })
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'hidden') {
+                canDraw = false;
+            }
+        });
 
         socket.on("players", (players) => {
             for (const player of players) {
@@ -104,7 +110,7 @@
         })
 
         socket.on("command", (command, args) => {
-            
+
             switch (command) {
                 case "reload":
                     window.location.reload(true);

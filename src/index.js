@@ -86,6 +86,7 @@ function startConsole() {
         
         if (command === 'logs') {
             console.log(logs.join("\n"));
+            logs = [];
         }
 
         startConsole();
