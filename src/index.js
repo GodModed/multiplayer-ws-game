@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express(); // Create an express app
-const port = 3000; // Set the port to listen on
+const port = 3003; // Set the port to listen on
 var generateName = require('sillyname'); // Import the random-name package
 const readline = require('readline'); // Import the readline package
 
