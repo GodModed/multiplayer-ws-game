@@ -101,6 +101,9 @@
             for (const circle of playerCircles) {
                 circle.destroy();
             }
+
+            //remove player circles from the array
+            circles = circles.filter(circle => circle.id !== playerId);
         });
 
         socket.on("draw", (data) => {
