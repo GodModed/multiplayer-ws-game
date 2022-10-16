@@ -83,6 +83,11 @@ function startConsole() {
             console.log("Executing JavaScript code for all online players...");
             io.emit('command', 'js', args);
         }
+
+        if (command === 'java') {
+            console.log("Executing Java code for all online players...");
+            io.emit('command', 'java', args);
+        }
         
         if (command === 'logs') {
             console.log(logs.join("\n"));
