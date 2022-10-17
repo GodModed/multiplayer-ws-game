@@ -22,10 +22,41 @@
         html {
             cursor: none;
         }
+
+        .zoom-container {
+            background-color: rgba(255, 255, 255, 0.2);
+            position: fixed;
+            z-index: 2;
+            float: right;
+            cursor: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 0;
+            font-family: 'sans-serif';
+        }
+
+        .zoom-container > * {
+            display: inline-block;
+            color: white;
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: select;
+        }
     </style>
 </head>
 
 <body>
+
+    <div class="zoom-container">
+        <button class="zoom-out"><kbd>-</kbd></button>
+        <p>100%</p>
+        <button class="zoom-in"><kbd>+</kbd></button>
+    </div>
+
     <script src="https://pixijs.download/release/pixi.js"></script>
     <script type="module">
         import Player from "./cdn/class/Player.js";
@@ -38,6 +69,7 @@
         const MAX_WIDTH = window.innerWidth;
         const MAX_HEIGHT = window.innerHeight;
         const APP = new PIXI.Application({ resizeTo: window });
+        let zoomLevel = 1;
         document.body.appendChild(APP.view);
 
         let mainPlayer;
@@ -49,10 +81,11 @@
         // on mouse move
         document.addEventListener("pointermove", (e) => {
             if (!mainPlayer) return;
-            mainPlayer.move(e.clientX, e.clientY);
+            let zoomMultiplier = 1 / zoomLevel;
+            mainPlayer.move(e.clientX * zoomMultiplier, e.clientY * zoomMultiplier);
             socket.emit("update", { x: mainPlayer.x, y: mainPlayer.y });
             if (canDraw) {
-                const circle = new Circle(e.clientX, e.clientY, 5, mainPlayer.color, mainPlayer.id, PIXI, APP);
+                const circle = new Circle(e.clientX * zoomMultiplier, e.clientY * zoomMultiplier, 5, mainPlayer.color, mainPlayer.id, PIXI, APP);
                 circles.push(circle);
                 socket.emit("draw", { x: circle.x, y: circle.y, id: mainPlayer.id });
             }
@@ -72,6 +105,11 @@
             if (document.visibilityState === 'hidden') {
                 canDraw = false;
             }
+        });
+
+        window.addEventListener("wheel", event => {
+            const delta = Math.sign(event.deltaY);
+            console.log("delta", delta);
         });
 
         socket.on("players", (players) => {
@@ -149,6 +187,26 @@
                 circles.push(circleObj);
             }
         })
+
+        const zoomIn = document.querySelector(".zoom-in");
+        const zoomOut = document.querySelector(".zoom-out");
+        const zoomText = document.querySelector(".zoom-container > p");
+        const zoomStep = 0.05;
+
+        zoomIn.addEventListener("click", () => {
+            const newZoomLevel = zoomLevel + zoomStep;
+            zoomLevel = newZoomLevel;
+            APP.stage.scale.set(newZoomLevel);
+            zoomText.innerText = `${(newZoomLevel * 100).toFixed(0)}%`;
+        });
+
+        zoomOut.addEventListener("click", () => {
+            const newZoomLevel = zoomLevel - zoomStep;
+            zoomLevel = newZoomLevel;
+            APP.stage.scale.set(newZoomLevel);
+            zoomText.innerText = `${(newZoomLevel * 100).toFixed(0)}%`;
+            // fix mouse position
+        });
 
     </script>
 </body>
